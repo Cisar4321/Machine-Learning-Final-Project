@@ -3,10 +3,26 @@ from PIL import Image
 import io
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+from pathlib import Path
+
+try:
+    from tensorflow.keras.models import load_model as tf_load_model
+except Exception:
+    tf_load_model = None
 
 # Cargar CSS externo
-with open("styles.css", "r", encoding="utf-8") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+_here = Path(__file__).resolve()
+_root = _here.parents[2]
+_style_candidates = [
+    _root / "app" / "styles.css",
+    _here.parent.parent / "styles.css",
+    Path("styles.css")
+]
+for _p in _style_candidates:
+    if _p.exists():
+        st.markdown(f"<style>{_p.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+        break
 
 st.title("🌿 Análisis de hojas de papa")
 st.write("""
@@ -55,9 +71,45 @@ if uploaded:
     ax.set_xlabel("Valor de píxel")
     ax.set_ylabel("Cantidad de píxeles")
     st.pyplot(fig)
-    
+
     st.markdown("---")
-    
+
+    st.subheader("🧠 Diagnóstico preliminar (CNN)")
+    model_path = _root / "models" / "potato_leaf_cnn.h5"
+    if tf_load_model and model_path.exists():
+        try:
+            @st.cache_resource
+            def _load_cnn(path):
+                return tf_load_model(str(path))
+
+            def _preprocess(img: Image.Image):
+                img = img.convert("RGB")
+                img = img.resize((224, 224))
+                x = np.asarray(img, dtype=np.float32) / 255.0
+                x = np.expand_dims(x, axis=0)
+                return x
+
+            model = _load_cnn(model_path)
+            x = _preprocess(image)
+            pred = model.predict(x)
+            probs = np.squeeze(pred)
+
+            classes_dir = _root / "data" / "2_data_resize"
+            if classes_dir.exists():
+                class_names = sorted([d.name for d in classes_dir.iterdir() if d.is_dir()])
+            else:
+                class_names = [f"Clase {i}" for i in range(len(probs))]
+
+            top_idx = int(np.argmax(probs))
+            st.success(f"Predicción: {class_names[top_idx]} ({probs[top_idx]*100:.1f}%)")
+            st.write("Probabilidades:")
+            for i, p in enumerate(probs):
+                st.write(f"- {class_names[i]}: {p*100:.1f}%")
+        except Exception as e:
+            st.warning("No se pudo ejecutar la inferencia del modelo.")
+    else:
+        st.info("Modelo no disponible o TensorFlow no instalado.")
+
     st.subheader("📌 Siguiente pasos")
     st.write("""
     - Integrar el modelo de clasificación para detectar enfermedades específicas en hojas de papa.

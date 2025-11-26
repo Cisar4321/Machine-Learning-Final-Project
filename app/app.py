@@ -5,8 +5,19 @@ import time
 # ---------------------- ESTILOS ------------------------------
 # ============================================================
 
-with open("styles.css", "r", encoding="utf-8") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+import os
+from pathlib import Path
+
+_here = Path(__file__).resolve()
+_root = _here.parent
+_style_candidates = [
+    _root / "styles.css",
+    Path("styles.css")
+]
+for _p in _style_candidates:
+    if _p.exists():
+        st.markdown(f"<style>{_p.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+        break
 
 # ============================================================
 # --------------------- TÍTULO PRINCIPAL ----------------------

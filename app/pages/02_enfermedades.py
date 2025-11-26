@@ -7,8 +7,18 @@ import pandas as pd
 import seaborn as sns
 
 # Cargar CSS externo
-with open("styles.css", "r", encoding="utf-8") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+from pathlib import Path
+_here = Path(__file__).resolve()
+_root = _here.parents[2]
+_style_candidates = [
+    _root / "app" / "styles.css",
+    _here.parent.parent / "styles.css",
+    Path("styles.css")
+]
+for _p in _style_candidates:
+    if _p.exists():
+        st.markdown(f"<style>{_p.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+        break
 
 # PATH CORRECTO
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "1_data_original"))
