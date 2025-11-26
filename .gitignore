@@ -1,2 +1,82 @@
 .venv/
+venv/
+env/
+ENV/
+.venv.bak/
+venv.bak/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Packages / build artifacts
+build/
+dist/
+downloads/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-wheel-metadata/
+
+# Testing / coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editors / IDE
+.vscode/
+.idea/
+.spyderproject
+.spyproject
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs / temp / caches
+*.log
+.cache/
+tmp/
+temp/
+
+# Environment variables
+.env
+.env.*
+
+# Streamlit
+.streamlit/secrets.toml
+
+# ML artifacts
 models/
+runs/
+tensorboard/
+checkpoints/
+*.h5
+*.keras
+*.pth
+*.pt
+*.ckpt
+*.onnx
+
+# Data outputs (derivados, no fuente)
+data/2_data_resize/
+data/4_features_embeddings/
