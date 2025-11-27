@@ -110,7 +110,7 @@ if "last_change" not in st.session_state:
 if time.time() - st.session_state.last_change >= 5:
     st.session_state.idx = (st.session_state.idx + 1) % len(datos)
     st.session_state.last_change = time.time()
-    st.experimental_rerun()
+    st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
 

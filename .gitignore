@@ -80,3 +80,5 @@ checkpoints/
 # Data outputs (derivados, no fuente)
 data/2_data_resize/
 data/4_features_embeddings/
+data/2_data_primary_leaf/
+data/3_data_extract_features_primary/
