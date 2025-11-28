@@ -76,6 +76,7 @@ checkpoints/
 *.pt
 *.ckpt
 *.onnx
+*.pkl
 
 # Data outputs (derivados, no fuente)
 data/2_data_resize/
