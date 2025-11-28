@@ -12,7 +12,7 @@ sys.path.append(str(ROOT))
 from src.segmentation import segment_primary_leaf, save_outputs
 from src.features import extract_features_extended
 
-INPUT_DIR = ROOT / "data/1_data_original"
+INPUT_DIR = ROOT / "Data_Balanced"
 SEGMENTED_DIR = ROOT / "data/2_data_primary_leaf"
 FEATURES_CSV = ROOT / "data/3_data_extract_features_primary/features_dataset.csv"
 TARGET_SIZE = (224, 224)
