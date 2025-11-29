@@ -4,6 +4,9 @@ import io
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import cv2
+import base64
+import time
 from pathlib import Path
 
 try:
@@ -110,14 +113,51 @@ if uploaded:
     else:
         st.info("Modelo no disponible o TensorFlow no instalado.")
 
-    st.subheader("📌 Siguiente pasos")
-    st.write("""
-    - Integrar el modelo de clasificación para detectar enfermedades específicas en hojas de papa.
-    - Visualización de porcentaje de afectación y zonas afectadas (heatmaps).
-    - Registro de historial de imágenes para seguimiento de evolución.
-    - Comparación automática entre hojas sanas y afectadas.
-    """)
-    
+    st.markdown("---")
+    st.subheader("🔥 Zonas afectadas (heatmap)")
+    hsv = cv2.cvtColor(np.array(image.convert("RGB")), cv2.COLOR_RGB2HSV)
+    lower_y = np.array([14, 30, 80])
+    upper_y = np.array([35, 255, 255])
+    mask_y = cv2.inRange(hsv, lower_y, upper_y)
+    mask_y = cv2.medianBlur(mask_y, 7)
+    heat = cv2.applyColorMap(cv2.normalize(mask_y, None, 0, 255, cv2.NORM_MINMAX), cv2.COLORMAP_JET)
+    img_bgr = cv2.cvtColor(np.array(image.convert("RGB")), cv2.COLOR_RGB2BGR)
+    overlay = cv2.addWeighted(img_bgr, 0.7, heat, 0.3, 0)
+    st.image(cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB), caption="Heatmap de posibles zonas afectadas", width=350)
+    affect_pct = float(np.sum(mask_y > 0)) / float(mask_y.size) * 100.0
+    st.write(f"Porcentaje estimado de afectación: {affect_pct:.1f}%")
+
+    st.markdown("---")
+    st.subheader("🗂️ Historial de análisis")
+    if "history" not in st.session_state:
+        st.session_state.history = []
+    entry = {
+        "ts": time.time(),
+        "green_ratio": float(green_ratio),
+        "yellow_ratio": float(yellow_ratio),
+        "affect_pct": float(affect_pct)
+    }
+    try:
+        buf = io.BytesIO()
+        image.save(buf, format="PNG")
+        entry["img"] = base64.b64encode(buf.getvalue()).decode("utf-8")
+    except Exception:
+        entry["img"] = None
+    st.session_state.history.append(entry)
+    st.write(f"Entradas en historial: {len(st.session_state.history)}")
+    if st.session_state.history:
+        cols = st.columns(min(3, len(st.session_state.history)))
+        for i, h in enumerate(st.session_state.history[-3:]):
+            if h.get("img"):
+                cols[i].image(base64.b64decode(h["img"]), caption=f"{time.strftime('%H:%M:%S', time.localtime(h['ts']))}", width=150)
+            cols[i].write(f"Afectación: {h['affect_pct']:.1f}%")
+
+    st.markdown("---")
+    st.subheader("🔄 Comparación: saludable vs afectado")
+    thresh = 5.0
+    status = "Saludable" if affect_pct < thresh and yellow_ratio < thresh else "Afectado"
+    st.write(f"Clasificación heurística: {status}")
+    st.write(f"Verde: {green_ratio:.1f}% | Amarillo: {yellow_ratio:.1f}% | Afectación (heatmap): {affect_pct:.1f}%")
     st.info("💡 Consejos: sube imágenes claras, con buena iluminación y enfoque en la hoja principal para obtener resultados óptimos cuando se integre el modelo.")
     
 else:
